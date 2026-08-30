@@ -1,0 +1,33 @@
+name: build-arm64
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build images (arm64)
+        run: |
+          DOCKER_DEFAULT_PLATFORM=linux/arm64 docker compose build
+
+      - name: Save images to tar
+        run: |
+          docker save -o grok2api_images.tar \
+            ghcr.io/lij768423-svg/grok2api:v3.1.6-lab \
+            ghcr.io/lij768423-svg/grok2api-quality-guard:v3.1.6-lab
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: grok2api-images
+          path: grok2api_images.tar
+          retention-days: 7
